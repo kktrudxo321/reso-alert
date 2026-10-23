@@ -61,7 +61,6 @@ class Game:
         self.exe = cfg['game_exe']
         self.image = os.path.basename(self.exe) or config.DEFAULT_GAME_EXE_NAME
         self.player_log = cfg['player_log']
-        self._recv_seen = None
         self._log_start = 0
         self.done_seen = False
 
@@ -118,8 +117,8 @@ class Game:
         except OSError:
             return 0
 
-    def login_value(self):
-        """이번 실행에서 Player.log에 로그인 응답이 찍혔으면 (설정한 역의) 발전도, 역 설정이 없으면 0. 아직이면 None.
+    def logged_in(self):
+        """이번 실행에서 Player.log에 로그인 응답(ReqMainIndex Recv)이 찍혔는지.
         실행 전 로그 크기(self._log_start)를 기억해 두고, 그 뒤에 새로 쓰인 부분만 본다(이전 세션 기록에 속지 않게)."""
         size = self.log_size()
         if size < self._log_start:          # 게임이 로그를 새로 시작함
@@ -129,18 +128,8 @@ class Game:
                 f.seek(self._log_start)
                 text = f.read().decode('utf-8', 'replace')
         except OSError:
-            return None
-        if 'ReqMainIndex Recv' not in text:
-            return None
-        sid = self.cfg.get('station_id')
-        if not sid:
-            return 0.0
-        m = re.search(r'"dev_degree"\s*:\s*\{.*?"%s"\s*:\s*\{\s*"dev_degree"\s*:\s*([0-9.]+)' % re.escape(sid), text, re.S)
-        if m:
-            return float(m.group(1))
-        if self._recv_seen is None:                            # 응답 JSON이 아직 다 안 써졌을 수 있음
-            self._recv_seen = time.time()
-        return -1.0 if time.time() - self._recv_seen > 5 else None
+            return False
+        return 'ReqMainIndex Recv' in text
 
     def attempt(self, k):
         if not self.kill():
@@ -150,7 +139,6 @@ class Game:
         self.launch()
         log(f'게임 실행 (시도 {k}/{MAX_ATTEMPTS})')
         moved, n, since = False, 0, 0.0
-        self._recv_seen = None
         pr = Presser()
         while time.time() - started < TIMEOUT:
             time.sleep(POLL)
@@ -158,12 +146,9 @@ class Game:
                 fresh = os.path.getmtime(self.player_log) >= started - 1
             except OSError:
                 fresh = False
-            if fresh:
-                v = self.login_value()
-                if v is not None:
-                    log(f'로그인 완료 ({int(time.time() - started)}초, 클릭 {n}회)'
-                        + (f', 발전도 {v:.4f}' if v and v > 0 else ''))
-                    return True
+            if fresh and self.logged_in():
+                log(f'로그인 완료 ({int(time.time() - started)}초, 클릭 {n}회)')
+                return True
             hwnd = self.hwnd()
             if not hwnd:
                 continue

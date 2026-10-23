@@ -28,7 +28,6 @@ DEFAULTS = {
     'notify_before_restart': True,  # 재실행 1분 전에 PC를 쓰는 중이면 알림 창 띄우기
     'screensaver_control': False,   # 재실행 중 화면 보호기를 잠깐 끄고 끝나면 다시 켜기(PC 설정을 건드림 → 기본 끔)
     'fallback_minutes': 31,         # 다음 주문 시각을 못 읽었을 때 다시 시도할 간격
-    'station_id': '83000003',       # 로그인 때 기록할 역 발전도(기본 황원역). 빈 값이면 기록 안 함
 }
 
 
