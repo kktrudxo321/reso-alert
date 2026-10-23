@@ -100,7 +100,7 @@ python -m resonance_auto status               # 지금 예약 보기
 | 검사 | 결과 |
 |---|---|
 | 파일 지문(SHA-256) | `9087f08c7d76ef23fe1aa1ec7e6cf2b35a432079d7106526b760ef09cb935d4e` |
-| VirusTotal | [검사 결과 보기](https://www.virustotal.com/gui/file/9087f08c7d76ef23fe1aa1ec7e6cf2b35a432079d7106526b760ef09cb935d4e) |
+| VirusTotal | **탐지 0 / 65** – [검사 결과 보기](https://www.virustotal.com/gui/file/9087f08c7d76ef23fe1aa1ec7e6cf2b35a432079d7106526b760ef09cb935d4e) |
 | Windows Defender (정의 1.461.156.0) | 위협 없음 |
 | CodeQL (GitHub 보안 검사) | 경고 0건 – 이 저장소의 Security 탭 |
 | Bandit (파이썬 보안 점검) | 높음 0 · 중간 0 · 낮음 22 (외부 명령 실행 위치·클릭 간격용 무작위 값 알림. SECURITY.md의 실행 목록과 같은 곳들) |
