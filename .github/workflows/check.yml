@@ -1,0 +1,15 @@
+name: check
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  compile:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r requirements.txt
+      - run: python -m compileall -q resonance_auto
+      - run: python -m resonance_auto help

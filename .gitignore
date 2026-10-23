@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+# 실행 기록·설정은 %LOCALAPPDATA%\ResonanceAutoRelogin에 저장되지만, 혹시 복사해 둔 것이 올라가지 않게
+relogin.log
+settings.json
+Player*.log
