@@ -172,7 +172,7 @@ class Game:
                     log(f'구글 로그인 창이 {WEB_STUCK}초 넘게 하얀 화면으로 멈춤 → 처음부터 다시')
                     return False
                 continue
-            if st in ('google_account', 'google_confirm') and now - since > GOOGLE_STUCK:
+            if st.startswith('google') and now - since > GOOGLE_STUCK:
                 log(f'구글 로그인 창에서 {GOOGLE_STUCK}초 넘게 진행이 없음 → 처음부터 다시')
                 return False
             if not pr.ready(now):

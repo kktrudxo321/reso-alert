@@ -9,7 +9,8 @@ CW, CH = 1076, 606
 CENTER = (538, 303)             # Sign in with Google
 TAP = (538, 510)                # 영상 넘기기·타이틀 터치 (가운데를 누르면 Sign in 버튼이 두 번 눌릴 수 있음)
 GOOGLE_ACCOUNT = (600, 262)     # 구글 계정 선택 창의 첫 번째 계정
-GOOGLE_CONTINUE = (682, 358)    # 구글 로그인 확인 '계속'
+GOOGLE_CONTINUE = (682, 358)    # 구글 로그인 확인 '계속'(어두운 테마)
+GOOGLE_CONTINUE_LIGHT = (682, 374)   # 밝은 테마에서는 카드가 16px 아래
 DOWNLOAD_OK = (538, 426)        # 리소스 다운로드 안내 '확인'
 PANEL_PROBES = [(320, 450), (760, 120), (310, 480)]
 
@@ -42,13 +43,24 @@ def web_loading(img):
 
 
 def in_google_panel(img):
-    px = _px(img)
-    return all(near(px(p), (30, 31, 32), 6) for p in PANEL_PROBES)
+    """구글 로그인 창 배경: Windows 어두운 테마면 (30,31,32), 밝은 테마면 (240,244,249). 'dark' / 'light' / None"""
+    cs = [_px(img)(p) for p in PANEL_PROBES]
+    if all(near(c, (30, 31, 32), 6) for c in cs):
+        return 'dark'
+    if all(near(c, (240, 244, 249), 6) for c in cs):
+        return 'light'
+    return None
 
 
 def google_confirm(img):
     box = img.crop((*scaled(img, (640, 348)), *scaled(img, (725, 368)))).convert('L')
     return sum(1 for v in box.getdata() if v > 100) > 40
+
+
+def google_confirm_light(img):
+    # 밝은 테마의 로그인 확인 화면: 취소/계속 버튼 테두리가 어둡게 보임(카드가 어두운 테마보다 16px 아래)
+    box = img.crop((*scaled(img, (640, 364)), *scaled(img, (725, 384)))).convert('L')
+    return sum(1 for v in box.getdata() if v < 150) > 15
 
 
 def ujoy_popup(img):
@@ -65,8 +77,11 @@ def download_popup(img):
 def login_state(img):
     if web_loading(img):
         return 'web_loading'
-    if in_google_panel(img):
+    theme = in_google_panel(img)
+    if theme == 'dark':
         return 'google_confirm' if google_confirm(img) else 'google_account'
+    if theme == 'light':
+        return 'google_confirm_light' if google_confirm_light(img) else 'google_account'
     if ujoy_popup(img):
         return 'ujoy'
     if download_popup(img):
@@ -75,6 +90,7 @@ def login_state(img):
 
 
 LOGIN_TARGET = {'ujoy': CENTER, 'google_account': GOOGLE_ACCOUNT, 'google_confirm': GOOGLE_CONTINUE,
+                'google_confirm_light': GOOGLE_CONTINUE_LIGHT,
                 'download': DOWNLOAD_OK, 'other': TAP}
 
 
