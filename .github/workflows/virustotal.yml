@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: '다시 검사할 릴리스 태그 (예: v1.1.1)'
+        description: '다시 검사할 릴리스 태그 (예: v1.0.0)'
         required: true
 permissions:
   contents: write
