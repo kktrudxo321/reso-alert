@@ -81,6 +81,8 @@ python -m resonance_auto status               # 지금 예약 보기
 python -m resonance_auto update               # 최신 릴리스로 업데이트
 ```
 
+끄려면 배지 메뉴의 **프로그램 종료**를 누르세요(반복 재접속을 멈추고 배지도 닫아요). 명령으로는 `python -m resonance_auto stop`(반복만 중지)이에요.
+
 창 없이 조용히 돌리려면 `python` 대신 `pythonw`를 쓰세요. 예: `pythonw -m resonance_auto start`
 
 배지를 PC를 켤 때마다 띄우고 싶으면, `Win + R` → `shell:startup` 폴더에 바로 가기를 만들어요.

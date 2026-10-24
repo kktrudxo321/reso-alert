@@ -211,7 +211,8 @@ class Badge:
         m.add_command(label='기록 열기', command=lambda: os.startfile(config.LOG) if os.path.exists(config.LOG) else None)
         m.add_command(label=f'업데이트 확인 (지금 v{__version__})', command=self.update)
         m.add_command(label='배지 위치 처음으로', command=self.reset_pos)
-        m.add_command(label='배지 닫기', command=self.root.destroy)
+        m.add_separator()
+        m.add_command(label='프로그램 종료', command=self.quit_all)
         ml, mt, mr, mb = W.window_rect(self.me)
         self.popup_menu(m, ml, mb)
 
@@ -226,6 +227,25 @@ class Badge:
         finally:
             m.grab_release()
             W.u32.SetWindowLongW(self.me, -20, ex)
+
+    def quit_all(self):
+        """반복 재접속을 멈추고 배지도 닫는다. 반복이 알림 창 응답을 기다리는 중이라 명령을 못 받으면 강제로 끈다."""
+        st = ctl.status()
+        if st:
+            ctl.send('stop')
+            open(config.STOP, 'w').close()
+            end = time.time() + 8
+            while W.process_alive(st['pid']) and time.time() < end:
+                time.sleep(0.3)
+            if W.process_alive(st['pid']):
+                subprocess.run([W.system_exe('taskkill.exe'), '/f', '/t', '/pid', str(st['pid'])],
+                               capture_output=True, creationflags=W.NO_WINDOW)
+                ctl.clear()
+                try:
+                    os.remove(config.STOP)
+                except OSError:
+                    pass
+        self.root.destroy()
 
     # 업데이트
     def toast(self, text, color=FG, ms=6000):
