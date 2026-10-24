@@ -147,18 +147,17 @@ def popup(run_at, out, note='', kind='restart'):
     alert_kind = kind == 'alert'
     choice = {'v': 'close' if alert_kind else 'run'}
     bg, fg, accent = '#1c2322', '#e4e9e6', '#6fb3b6'
-    root.configure(bg=bg, padx=18, pady=14)
+    root.configure(bg=bg, padx=12 if alert_kind else 18, pady=10 if alert_kind else 14)
     tk.Label(root, text='구매한 주문이 끝났어요' if alert_kind else '곧 레조넌스를 재실행해요', bg=bg, fg=fg,
-             font=('Malgun Gothic', 12, 'bold')).pack(anchor='w')
-    msg = tk.Label(root, text='', bg=bg, fg=accent, font=('Malgun Gothic', 11))
-    msg.pack(anchor='w', pady=(4, 10))
+             font=('Malgun Gothic', 10 if alert_kind else 12, 'bold')).pack(anchor='w')
+    msg = tk.Label(root, text='', bg=bg, fg=accent, font=('Malgun Gothic', 9 if alert_kind else 11))
+    msg.pack(anchor='w', pady=(2, 6) if alert_kind else (4, 10))
     if note:
         tk.Label(root, text=note, bg=bg, fg='#e0857b', font=('Malgun Gothic', 9), wraplength=360,
                  justify='left').pack(anchor='w', pady=(0, 6))
-    tk.Label(root, text=('교정 센터 구매 화면에서 받고 다시 구매해 주세요. 다시 구매한 뒤 [다음 주문 확인]을 누르거나 '
-                         '구매 화면을 열어 두면 다음 알림 시각을 맞춰요.') if alert_kind else
-             '게임이 꺼졌다 다시 켜져요. 아무것도 누르지 않으면 정해진 시각에 진행해요.',
-             bg=bg, fg=fg, font=('Malgun Gothic', 9), wraplength=360, justify='left').pack(anchor='w', pady=(0, 12))
+    if not alert_kind:
+        tk.Label(root, text='게임이 꺼졌다 다시 켜져요. 아무것도 누르지 않으면 정해진 시각에 진행해요.',
+                 bg=bg, fg=fg, font=('Malgun Gothic', 9), wraplength=360, justify='left').pack(anchor='w', pady=(0, 12))
     row = tk.Frame(root, bg=bg)
     row.pack(anchor='w')
 
@@ -166,7 +165,7 @@ def popup(run_at, out, note='', kind='restart'):
         choice['v'] = v
         root.destroy()
 
-    buttons = ([('다음 주문 확인', 'check'), ('5분 뒤 다시', 'delay'), ('다음 날 05시', 'nextday'), ('닫기', 'close')]
+    buttons = ([('다음 주문 확인', 'check'), ('다음 날 05시', 'nextday'), ('알림 설정 없이 닫기', 'close')]
                if alert_kind else
                [('5분 미루기', 'delay'), ('다음 주문 확인', 'check'), ('다음 날', 'nextday'), ('반복 중지', 'stop')])
     for label, v in buttons:

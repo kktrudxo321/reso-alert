@@ -3,7 +3,7 @@
 레조넌스가 켜져 있을 때만 게임 창 바로 위 층에 붙어 보인다(다른 창이 게임을 가리면 배지도 가려지고,
 게임을 최소화·종료하면 같이 사라짐). 포커스를 가져가지 않는다. 재접속 중에도 '재실행 중'으로 보이고,
 배지가 누르는 자리와 겹치면 그동안만 게임 화면 가운데 맨 위로 비켜 뒀다가 끝나면 원래 자리로 돌아간다.
-- 클릭: 메뉴(지금 실행 / 미루기 / 다음 주문 확인 / 다음 날 05시 / 시각 지정 / 재실행 사용 켜고 끄기 / 반복 중지·시작)
+- 클릭: 메뉴(지금 실행 / 미루기 / 다음 주문 확인 / 다음 날 05시 / 시각 지정 / '알림 시점에 재실행' 켜고 끄기 / 반복 중지·시작)
 - 드래그: 위치를 게임 창 가장자리 기준(px)으로 기억 → 창을 옮기거나 크기를 바꿔도 같은 자리
 """
 import json
@@ -201,7 +201,7 @@ class Badge:
             m.add_command(label='시각 지정…', command=self.ask_time)
             m.add_separator()
             self.relaunch_var = tk.BooleanVar(value=on)
-            m.add_checkbutton(label='재실행 사용 (끄면 구매 완료 알림만)', variable=self.relaunch_var,
+            m.add_checkbutton(label='알림 시점에 재실행', variable=self.relaunch_var,
                               command=lambda: config.set_value('relaunch', bool(self.relaunch_var.get())))
             m.add_command(label='반복 중지', command=lambda: ctl.send('stop'))
         else:
@@ -213,10 +213,19 @@ class Badge:
         m.add_command(label='배지 위치 처음으로', command=self.reset_pos)
         m.add_command(label='배지 닫기', command=self.root.destroy)
         ml, mt, mr, mb = W.window_rect(self.me)
+        self.popup_menu(m, ml, mb)
+
+    def popup_menu(self, m, x, y):
+        """메뉴를 띄우는 동안만 배지를 활성 창으로 만든다. Windows 팝업 메뉴는 주인 창이 활성 창이어야
+        바깥을 누르거나 다른 창을 쓰면 닫힌다(배지는 평소 포커스를 안 가져가는 창이라 그대로면 안 닫힘)."""
+        ex = W.u32.GetWindowLongW(self.me, -20)
+        W.u32.SetWindowLongW(self.me, -20, ex & ~0x08000000)        # 잠깐 WS_EX_NOACTIVATE 해제
+        W.u32.SetForegroundWindow(self.me)                           # 사용자가 배지를 누른 직후라 허용됨
         try:
-            m.tk_popup(ml, mb)
+            m.tk_popup(x, y)
         finally:
             m.grab_release()
+            W.u32.SetWindowLongW(self.me, -20, ex)
 
     # 업데이트
     def toast(self, text, color=FG, ms=6000):
