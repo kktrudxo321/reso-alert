@@ -115,8 +115,27 @@ def play_pop():
         pass
 
 
-def popup(run_at, out, note=''):
-    """알림 창 하나를 띄우고 고른 것(run/delay/check/nextday/stop)을 out 파일에 남긴다."""
+def alert(cfg, log, note=''):
+    """재실행 끔(알림만): 구매가 끝났다는 알림 창을 띄우고 고른 것(check/delay/nextday/close)을 돌려준다."""
+    out = os.path.join(config.TMP_DIR, 'notify_choice.txt')
+    if os.path.exists(out):
+        os.remove(out)
+    exe = os.path.join(os.path.dirname(sys.executable), 'pythonw.exe')
+    try:
+        subprocess.run([exe if os.path.exists(exe) else sys.executable, '-m', 'resonance_auto', 'popup',
+                        str(time.time() + 30 * 60), out, note, 'alert'], timeout=31 * 60, cwd=_pkg_parent())
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+    try:
+        with open(out) as f:
+            return f.read().strip() or 'close'
+    except OSError:
+        return 'close'
+
+
+def popup(run_at, out, note='', kind='restart'):
+    """알림 창 하나를 띄우고 고른 것을 out 파일에 남긴다.
+    kind='restart': 재실행 1분 전(run/delay/check/nextday/stop), kind='alert': 구매 완료 알림(check/delay/nextday/close)."""
     import tkinter as tk
     W.dpi_aware()
     cfg = config.load()
@@ -125,16 +144,20 @@ def popup(run_at, out, note=''):
     root.title('레조넌스 재실행')
     root.attributes('-topmost', True)
     root.resizable(False, False)
-    choice = {'v': 'run'}
+    alert_kind = kind == 'alert'
+    choice = {'v': 'close' if alert_kind else 'run'}
     bg, fg, accent = '#1c2322', '#e4e9e6', '#6fb3b6'
     root.configure(bg=bg, padx=18, pady=14)
-    tk.Label(root, text='곧 레조넌스를 재실행해요', bg=bg, fg=fg, font=('Malgun Gothic', 12, 'bold')).pack(anchor='w')
+    tk.Label(root, text='구매한 주문이 끝났어요' if alert_kind else '곧 레조넌스를 재실행해요', bg=bg, fg=fg,
+             font=('Malgun Gothic', 12, 'bold')).pack(anchor='w')
     msg = tk.Label(root, text='', bg=bg, fg=accent, font=('Malgun Gothic', 11))
     msg.pack(anchor='w', pady=(4, 10))
     if note:
         tk.Label(root, text=note, bg=bg, fg='#e0857b', font=('Malgun Gothic', 9), wraplength=360,
                  justify='left').pack(anchor='w', pady=(0, 6))
-    tk.Label(root, text='게임이 꺼졌다 다시 켜져요. 아무것도 누르지 않으면 정해진 시각에 진행해요.',
+    tk.Label(root, text=('교정 센터 구매 화면에서 받고 다시 구매해 주세요. 다시 구매한 뒤 [다음 주문 확인]을 누르거나 '
+                         '구매 화면을 열어 두면 다음 알림 시각을 맞춰요.') if alert_kind else
+             '게임이 꺼졌다 다시 켜져요. 아무것도 누르지 않으면 정해진 시각에 진행해요.',
              bg=bg, fg=fg, font=('Malgun Gothic', 9), wraplength=360, justify='left').pack(anchor='w', pady=(0, 12))
     row = tk.Frame(root, bg=bg)
     row.pack(anchor='w')
@@ -143,7 +166,10 @@ def popup(run_at, out, note=''):
         choice['v'] = v
         root.destroy()
 
-    for label, v in [('5분 미루기', 'delay'), ('다음 주문 확인', 'check'), ('다음 날', 'nextday'), ('반복 중지', 'stop')]:
+    buttons = ([('다음 주문 확인', 'check'), ('5분 뒤 다시', 'delay'), ('다음 날 05시', 'nextday'), ('닫기', 'close')]
+               if alert_kind else
+               [('5분 미루기', 'delay'), ('다음 주문 확인', 'check'), ('다음 날', 'nextday'), ('반복 중지', 'stop')])
+    for label, v in buttons:
         tk.Button(row, text=label, command=lambda v=v: pick(v), font=('Malgun Gothic', 9), bg='#2f3936', fg=fg,
                   activebackground=accent, relief='flat', padx=10, pady=4).pack(side='left', padx=(0, 6))
 
@@ -152,7 +178,8 @@ def popup(run_at, out, note=''):
         if left <= 0:
             root.destroy()
             return
-        msg.config(text=f'{datetime.fromtimestamp(run_at):%H:%M:%S} 재실행 · {int(left)}초 남음')
+        msg.config(text=f'{datetime.now():%H:%M} 알림' if alert_kind else
+                   f'{datetime.fromtimestamp(run_at):%H:%M:%S} 재실행 · {int(left)}초 남음')
         W.u32.SetWindowPos(int(root.wm_frame(), 16), -1, 0, 0, 0, 0, 0x0001 | 0x0002 | 0x0010)
         root.after(500, tick)
 

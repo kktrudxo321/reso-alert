@@ -123,7 +123,7 @@ def main(argv):
         return 0
     if cmd == 'popup':                      # 내부용: 알림 창
         from . import notify
-        notify.popup(float(rest[0]), rest[1], rest[2] if len(rest) > 2 else '')
+        notify.popup(float(rest[0]), rest[1], rest[2] if len(rest) > 2 else '', rest[3] if len(rest) > 3 else 'restart')
         return 0
     print(__doc__)
     return 2

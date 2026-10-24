@@ -390,6 +390,16 @@ def run_once(cfg, buy=None):
                 start_screensaver()
 
 
+def peek_order(cfg):
+    """게임이 지금 교정 센터 구매 화면이면 다음 주문 완료 시각을 읽는다(아니면 조용히 None)."""
+    W.dpi_aware()
+    g = Game(cfg)
+    hwnd, img = g.grab()
+    if not hwnd or S.screen_state(img) != 'back':
+        return None
+    return g.read_next_buy()
+
+
 def check_order(cfg):
     """재접속 없이 지금 화면이 구매 화면이면 다음 주문 완료 시각을 읽는다."""
     W.dpi_aware()

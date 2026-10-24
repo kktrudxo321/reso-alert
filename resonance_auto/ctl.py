@@ -97,7 +97,9 @@ def apply(cmd, nxt, cfg, log):
     if name == 'check':
         at = check_order(cfg)
         if at:
-            nxt = cap_at_5am(at.timestamp() + 30 + (time.time() % 30))
+            # 재실행이 켜져 있으면 완료 30~60초 뒤 재실행, 꺼져 있으면(알림만) 완료 시각 그대로 알림
+            relaunch = config.load().get('relaunch', True)
+            nxt = cap_at_5am(at.timestamp() + (30 + (time.time() % 30) if relaunch else 0))
             log(f'다음 주문 확인 → {datetime.fromtimestamp(nxt):%H:%M:%S}')
             beat(nxt, note='')
         else:

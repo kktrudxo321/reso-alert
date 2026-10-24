@@ -24,6 +24,7 @@ DEFAULTS = {
     'game_exe': '',                 # 게임 실행 파일 전체 경로 (setup에서 찾거나 고름)
     'player_log': DEFAULT_PLAYER_LOG,
     'window_rect': None,            # [x, y, 너비, 높이]: 재실행 때 게임 창을 이 자리로 옮김. None이면 옮기지 않음
+    'relaunch': True,               # 재실행 사용. 끄면 구매가 끝나는 시각에 알림만 띄움(직접 받고 다시 구매)
     'buy_automation': True,         # 로그인 뒤 교정 센터 일괄 수령·구매까지 할지
     'notify_before_restart': True,  # 재실행 1분 전에 PC를 쓰는 중이면 알림 창 띄우기
     'screensaver_control': False,   # 재실행 중 화면 보호기를 잠깐 끄고 끝나면 다시 켜기(PC 설정을 건드림 → 기본 끔)
@@ -53,6 +54,12 @@ def save(data):
     with open(tmp, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
     os.replace(tmp, SETTINGS)
+
+
+def set_value(key, value):
+    data = load()
+    data[key] = value
+    save(data)
 
 
 def find_game_exe():

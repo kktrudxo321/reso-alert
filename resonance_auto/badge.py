@@ -3,7 +3,7 @@
 레조넌스가 켜져 있을 때만 게임 창 바로 위 층에 붙어 보인다(다른 창이 게임을 가리면 배지도 가려지고,
 게임을 최소화·종료하면 같이 사라짐). 포커스를 가져가지 않는다. 재접속 중에도 '재실행 중'으로 보이고,
 배지가 누르는 자리와 겹치면 그동안만 게임 화면 가운데 맨 위로 비켜 뒀다가 끝나면 원래 자리로 돌아간다.
-- 클릭: 메뉴(지금 실행 / 미루기 / 다음 주문 확인 / 다음 날 / 시각 지정 / 반복 중지·시작)
+- 클릭: 메뉴(지금 실행 / 미루기 / 다음 주문 확인 / 다음 날 05시 / 시각 지정 / 재실행 사용 켜고 끄기 / 반복 중지·시작)
 - 드래그: 위치를 게임 창 가장자리 기준(px)으로 기억 → 창을 옮기거나 크기를 바꿔도 같은 자리
 """
 import json
@@ -74,11 +74,14 @@ class Badge:
             return '⏱ 재실행 꺼짐', OFF
         if st.get('note') == '재실행 중':
             return '⏱ 재실행 중', BUSY
+        if st.get('note') == '구매 확인 필요':
+            return '🔔 구매 확인 필요', BUSY
+        icon = '⏱' if self.cfg_relaunch() else '🔔'            # 🔔 = 재실행 끔(구매 완료 알림만)
         nr = datetime.fromtimestamp(st['next_run'])
         sec = max(0, int(st['next_run'] - time.time()))
         left = f'{sec // 3600}:{sec % 3600 // 60:02d}' if sec >= 3600 else f'{sec // 60}분'
         day = '' if nr.date() == datetime.now().date() else f' ({nr:%m/%d})'
-        return f'⏱ {nr:%H:%M}{day} · {left}', ACCENT
+        return f'{icon} {nr:%H:%M}{day} · {left}', ACCENT
 
     def client_box(self, g):
         r = W.wt.RECT()
@@ -185,16 +188,21 @@ class Badge:
         st = ctl.status()
         m = tk.Menu(self.root, tearoff=0, font=(FONT, 9))
         txt, _ = self.text()
-        m.add_command(label=(st.get('mode', '') + ' · ' if st else '') + txt.replace('⏱ ', ''), state='disabled')
+        m.add_command(label=(st.get('mode', '') + ' · ' if st else '') + txt.replace('⏱ ', '').replace('🔔 ', '알림 '),
+                      state='disabled')
         m.add_separator()
         if st:
-            m.add_command(label='지금 실행', command=lambda: ctl.send('now'))
+            on = self.cfg_relaunch()
+            m.add_command(label='지금 실행' if on else '지금 알림', command=lambda: ctl.send('now'))
             m.add_command(label='5분 미루기', command=lambda: ctl.send('delay', 300))
             m.add_command(label='30분 미루기', command=lambda: ctl.send('delay', 1800))
             m.add_command(label='다음 주문 확인', command=lambda: ctl.send('check'))
-            m.add_command(label='다음 날', command=lambda: ctl.send('nextday'))
+            m.add_command(label='다음 날 05시', command=lambda: ctl.send('nextday'))
             m.add_command(label='시각 지정…', command=self.ask_time)
             m.add_separator()
+            self.relaunch_var = tk.BooleanVar(value=on)
+            m.add_checkbutton(label='재실행 사용 (끄면 구매 완료 알림만)', variable=self.relaunch_var,
+                              command=lambda: config.set_value('relaunch', bool(self.relaunch_var.get())))
             m.add_command(label='반복 중지', command=lambda: ctl.send('stop'))
         else:
             m.add_command(label='구매 시각 반복 시작', command=lambda: self.start('start'))
@@ -261,6 +269,9 @@ class Badge:
             self.start(*args)
         self.start('badge', '--after', str(os.getpid()))
         self.root.destroy()
+
+    def cfg_relaunch(self):
+        return bool(config.load().get('relaunch', True))
 
     def reset_pos(self):
         self.pos = None
