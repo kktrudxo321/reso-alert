@@ -32,9 +32,10 @@ def gate(run_at, cfg, log):
                 return run_at                   # 중지·배지 명령은 반복 쪽이 처리
             ctl.beat(run_at)
             time.sleep(min(5, max(0.2, check - time.time())))
-        if W.idle_seconds() >= 60:
-            return run_at
-        log(f'재실행 1분 전 PC 사용 중 → 알림 ({datetime.fromtimestamp(run_at):%H:%M:%S} 예정)')
+        idle = W.idle_seconds()
+        if idle >= 60 or W.screensaver_running():
+            return run_at                       # 조작 없음(또는 화면 보호기 켜짐) → 알림 없이 진행
+        log(f'재실행 1분 전 PC 사용 중(마지막 입력 {idle:.0f}초 전) → 알림 ({datetime.fromtimestamp(run_at):%H:%M:%S} 예정)')
         out = os.path.join(config.TMP_DIR, 'notify_choice.txt')
         if os.path.exists(out):
             os.remove(out)
