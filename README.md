@@ -102,19 +102,20 @@ python -m resonance_auto update               # 최신 릴리스로 업데이트
 - 명령은 이 폴더(저장소 폴더)에서 실행하세요.
 - 로그인이 5분 안에 안 되면 처음부터 다시, 최대 5번까지 해요.
 
-## 검사 결과 (v1.0.0)
+## 검사 결과 (v1.1.0)
 
-배포 파일: [Releases의 `reso-alert-v1.0.0.zip`](https://github.com/kktrudxo321/reso-alert/releases/tag/v1.0.0)
+배포 파일: [Releases의 `reso-alert-v1.1.0.zip`](https://github.com/kktrudxo321/reso-alert/releases/tag/v1.1.0)
 
 | 검사 | 결과 |
 |---|---|
-| 파일 지문(SHA-256) | `9087f08c7d76ef23fe1aa1ec7e6cf2b35a432079d7106526b760ef09cb935d4e` |
-| VirusTotal | **탐지 0 / 65** – [검사 결과 보기](https://www.virustotal.com/gui/file/9087f08c7d76ef23fe1aa1ec7e6cf2b35a432079d7106526b760ef09cb935d4e) |
-| Windows Defender (정의 1.461.156.0) | 위협 없음 |
+| 파일 지문(SHA-256) | `373ef49b07b3cb70e9e7e121d324038f11fbe82dc72f9097b0f5e41da31e88fa` |
+| VirusTotal | **탐지 0 / 62** – [검사 결과 보기](https://www.virustotal.com/gui/file/373ef49b07b3cb70e9e7e121d324038f11fbe82dc72f9097b0f5e41da31e88fa) |
+| Windows Defender | 위협 없음 |
 | CodeQL (GitHub 보안 검사) | 경고 0건 – 이 저장소의 Security 탭 |
-| Bandit (파이썬 보안 점검) | 높음 0 · 중간 0 · 낮음 22 (외부 명령 실행 위치·클릭 간격용 무작위 값 알림. SECURITY.md의 실행 목록과 같은 곳들) |
+| Bandit (파이썬 보안 점검) | 높음 0 · 중간 0 · 낮음 26 (외부 명령 실행 위치·클릭 간격용 무작위 값 알림. SECURITY.md의 실행 목록과 같은 곳들) |
 
-받은 파일이 검사한 파일과 같은지 확인하려면 PowerShell에서 `Get-FileHash reso-alert-v1.0.0.zip`을 실행해 위 지문과 비교하세요.
+받은 파일이 검사한 파일과 같은지 확인하려면 PowerShell에서 `Get-FileHash reso-alert-v1.1.0.zip`을 실행해 위 지문과 비교하세요.
+이전 버전의 검사 결과는 각 [릴리스](https://github.com/kktrudxo321/reso-alert/releases) 설명에 있어요.
 
 ## 라이선스
 
