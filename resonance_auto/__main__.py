@@ -7,6 +7,8 @@
   python -m resonance_auto stop               반복 중지
   python -m resonance_auto badge              게임 창 위 타이머 배지
   python -m resonance_auto status             지금 예약 보기
+  python -m resonance_auto update             GitHub 최신 릴리스로 업데이트
+  python -m resonance_auto version            지금 버전
 
   옵션: start --delay 10   첫 재접속을 10분 뒤에
 """
@@ -103,7 +105,18 @@ def main(argv):
         return 0
     if cmd == 'badge':
         from . import badge
-        badge.run()
+        badge.run(int(rest[rest.index('--after') + 1]) if '--after' in rest else None)
+        return 0
+    if cmd == 'update':
+        from . import updater
+        changed, msg = updater.update()
+        print(msg)
+        if changed:
+            print('반복이나 배지가 켜져 있으면 껐다 다시 켜야 새 버전이 적용돼요(배지 메뉴의 업데이트는 자동으로 다시 켜요).')
+        return 0
+    if cmd == 'version':
+        from . import __version__
+        print(__version__)
         return 0
     if cmd == 'status':
         status()

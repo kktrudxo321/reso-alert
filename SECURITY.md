@@ -13,7 +13,8 @@
 | 레지스트리에 등록된 화면 보호기 프로그램(설정 시) | 재접속 전에 켜져 있던 화면 보호기를 다시 켜기 | `game.py` `start_screensaver` |
 | 기록 파일 열기(`os.startfile`) | 배지 메뉴의 '기록 열기'를 눌렀을 때만 | `badge.py` |
 | `System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -NonInteractive -Command -` | Windows 내장 한국어 OCR로 '남은 시간' 글자 읽기. 코드에 적힌 고정 명령을 표준 입력으로만 넘기고, 스크립트 파일을 만들거나 실행 정책을 바꾸지 않아요 | `ocr.py` |
-| 같은 파이썬(`-m resonance_auto popup` 등) | 알림 창·반복 시작 | `notify.py`, `badge.py` |
+| 같은 파이썬(`-m resonance_auto popup` 등) | 알림 창·반복 시작, 업데이트 뒤 배지·반복 다시 켜기 | `notify.py`, `badge.py` |
+| `git` (git으로 받은 경우, 업데이트할 때만) | 최신 릴리스 받기 | `updater.py` |
 
 ## Windows API
 
@@ -29,12 +30,17 @@
 ## 파일
 
 - 읽기: 게임 로그 `%USERPROFILE%\AppData\LocalLow\临界\레조넌스\Player.log`(로그인이 끝났는지만 확인)
-- 쓰기: `%LOCALAPPDATA%\ResonanceAutoRelogin\` 아래만 (settings.json, relogin.log, 상태·명령 파일, 임시 캡처 이미지, 알림 소리 파일)
+- 쓰기: `%LOCALAPPDATA%\ResonanceAutoRelogin\` 아래(settings.json, relogin.log, 상태·명령 파일, 임시 캡처 이미지, 알림 소리 파일, 업데이트 백업). 업데이트할 때만 프로그램 폴더의 코드·문서 파일을 바꿔요.
 - 레지스트리: 설정 시에만 화면 보호기 경로를 **읽기**(`HKCU\Control Panel\Desktop`)
 
 ## 네트워크
 
-없어요. `socket`, `urllib`, `requests` 등 네트워크 모듈을 쓰지 않아요.
+**'업데이트 확인'(배지 메뉴 또는 `python -m resonance_auto update`)을 눌렀을 때만** 접속해요. 그 밖에는 접속하지 않아요(`updater.py`).
+
+- 접속하는 곳: `api.github.com`(최신 릴리스 정보), `github.com`과 GitHub 릴리스 파일 저장소(압축 파일 받기). 코드에 이 주소들만 허용해 두고, 다른 곳으로 이동되면 멈춰요.
+- 보내는 것: 없음(일반 HTTPS 요청, User-Agent에 프로그램 버전만).
+- git으로 받은 폴더면 `git fetch --tags` 후 릴리스 태그로 이어 받기만 해요(직접 고친 파일이 있으면 멈춤).
+- 압축 파일로 받은 폴더면 릴리스 zip을 받아 **GitHub가 알려 주는 SHA-256 지문과 같은지 확인한 뒤에만** 바꿔요. 압축 안 경로가 이상하면(`..` 등) 멈추고, 프로그램 폴더의 `resonance_auto/`·문서 파일만 바꿔요. 바꾸기 전 파일은 `%LOCALAPPDATA%\ResonanceAutoRelogin\backup\<이전 버전>`에 남겨요.
 
 ## 시작 프로그램·자동 실행
 

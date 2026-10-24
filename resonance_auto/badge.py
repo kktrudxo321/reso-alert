@@ -11,11 +11,12 @@ import os
 import re
 import subprocess
 import sys
+import threading
 import time
 import tkinter as tk
 from datetime import datetime, timedelta
 
-from . import config, ctl, screens as S, winapi as W
+from . import __version__, config, ctl, screens as S, winapi as W
 
 # 재접속 때 누르는 자리. 배지가 이 근처에 있으면 재접속 동안만 게임 화면 가운데 맨 위로 비켜 둔다.
 CLICK_POINTS = [S.CENTER, S.TAP, S.GOOGLE_ACCOUNT, S.GOOGLE_CONTINUE, S.DOWNLOAD_OK, S.PROFILE_ICON,
@@ -200,6 +201,7 @@ class Badge:
             m.add_command(label='31분 반복 시작', command=lambda: self.start('start', '--interval', '31'))
         m.add_separator()
         m.add_command(label='기록 열기', command=lambda: os.startfile(config.LOG) if os.path.exists(config.LOG) else None)
+        m.add_command(label=f'업데이트 확인 (지금 v{__version__})', command=self.update)
         m.add_command(label='배지 위치 처음으로', command=self.reset_pos)
         m.add_command(label='배지 닫기', command=self.root.destroy)
         ml, mt, mr, mb = W.window_rect(self.me)
@@ -207,6 +209,58 @@ class Badge:
             m.tk_popup(ml, mb)
         finally:
             m.grab_release()
+
+    # 업데이트
+    def toast(self, text, color=FG, ms=6000):
+        """배지 아래에 잠깐 뜨는 안내."""
+        if getattr(self, '_toast', None):
+            try:
+                self._toast.destroy()
+            except tk.TclError:
+                pass
+        w = self._toast = tk.Toplevel(self.root)
+        w.overrideredirect(True)
+        w.configure(bg=BG, highlightthickness=1, highlightbackground=ACCENT)
+        tk.Label(w, text=text, bg=BG, fg=color, font=(FONT, 9), padx=10, pady=5, wraplength=360, justify='left').pack()
+        ml, mt, mr, mb = W.window_rect(self.me)
+        w.geometry(f'+{ml}+{mb + 4}')
+        w.attributes('-topmost', True)
+        if ms:
+            w.after(ms, lambda: w.winfo_exists() and w.destroy())
+
+    def update(self):
+        self.toast('최신 버전을 확인하는 중이에요…', MUTED, 0)
+
+        def work():
+            from . import updater
+            changed, msg = updater.update()
+            self.root.after(0, lambda: self.after_update(changed, msg))
+        threading.Thread(target=work, daemon=True).start()
+
+    def after_update(self, changed, msg):
+        if not changed:
+            self.toast(msg, FG if '최신' in msg else WARN)
+            return
+        self.toast(msg + ' 새 버전으로 다시 시작해요.', ACCENT, 0)
+        self.root.after(1500, self.restart_all)
+
+    def restart_all(self):
+        """반복이 돌고 있으면 같은 예약으로 새 버전에서 다시 켜고, 배지도 새 버전으로 다시 띄운다."""
+        st = ctl.status()
+        if st:
+            mode = st.get('mode', '')
+            delay = max(0.0, (st['next_run'] - time.time()) / 60)
+            ctl.send('stop')
+            end = time.time() + 30
+            while ctl.status() and time.time() < end:
+                time.sleep(0.5)
+            args = ['start', '--delay', f'{delay:.2f}']
+            m = re.match(r'(\d+)분 반복', mode)
+            if m:
+                args += ['--interval', m.group(1)]
+            self.start(*args)
+        self.start('badge', '--after', str(os.getpid()))
+        self.root.destroy()
 
     def reset_pos(self):
         self.pos = None
@@ -247,7 +301,11 @@ class Badge:
         w.after(50, lambda: (w.focus_force(), e.focus_set(), e.select_range(0, 'end')))
 
 
-def run():
+def run(after_pid=None):
+    if after_pid:                                # 업데이트 뒤 다시 띄울 때: 이전 배지가 끝날 때까지 기다림
+        end = time.time() + 15
+        while W.process_alive(after_pid) and time.time() < end:
+            time.sleep(0.2)
     lock = W.single_instance('ResonanceAutoRelogin_badge')
     if lock is None:
         return
