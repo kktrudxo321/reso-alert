@@ -201,7 +201,7 @@ class Badge:
             m.add_command(label='시각 지정…', command=self.ask_time)
             m.add_separator()
             self.relaunch_var = tk.BooleanVar(value=on)
-            m.add_checkbutton(label='알림 시점에 재실행', variable=self.relaunch_var,
+            m.add_checkbutton(label='알림 시점에 재실행 ' + ('끄기' if on else '켜기'), variable=self.relaunch_var,
                               command=lambda: config.set_value('relaunch', bool(self.relaunch_var.get())))
             m.add_command(label='반복 중지', command=lambda: ctl.send('stop'))
         else:
