@@ -22,7 +22,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))     # 저장�
 ALLOWED_HOSTS = ('api.github.com', 'github.com', 'objects.githubusercontent.com',
                  'release-assets.githubusercontent.com')
 # 압축 파일에서 덮어쓸 대상(그 밖의 파일은 건드리지 않음)
-TOP_LEVEL = ('resonance_auto/', 'README.md', 'SECURITY.md', 'LICENSE', 'requirements.txt')
+TOP_LEVEL = ('resonance_auto/', 'README.md', 'SECURITY.md', 'LICENSE', 'requirements.txt',
+             '실행.bat', '시작프로그램 등록.bat')
 
 
 def _get(url, timeout=20):

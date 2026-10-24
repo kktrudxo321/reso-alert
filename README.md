@@ -23,7 +23,7 @@
 
 ## 하지 않는 일 (안전성)
 
-- **인터넷 접속은 '업데이트 확인'을 눌렀을 때만** GitHub(이 저장소의 릴리스)로 해요. 그 밖에는 접속하지 않고, 아무것도 보내지 않아요.
+- **프로그램의 인터넷 접속은 '업데이트 확인'을 눌렀을 때만** GitHub(이 저장소의 릴리스)로 해요. 그 밖에는 접속하지 않고, 아무것도 보내지 않아요. `실행.bat`은 Python이나 Pillow가 없을 때만 winget·pip으로 받아 설치해요.
 - **게임 메모리를 읽거나 바꾸지 않아요.** 게임 파일도 건드리지 않아요.
 - **비밀번호·토큰을 다루지 않아요.** 구글 로그인은 게임 자체 로그인 창에서 이미 로그인된 계정을 고르는 클릭만 해요.
 - 게임 로그(`Player.log`)는 **로그인이 끝났는지**만 확인해요. 이 파일에는 계정 정보가 들어 있으니 다른 사람에게 공유하지 마세요.
@@ -32,27 +32,29 @@
 
 ## 필요한 것
 
-- Windows 10 / 11, **한국어 OCR 언어 팩**(한국어 Windows는 기본 포함. 영문 Windows는 설정 → 시간 및 언어 → 언어 및 지역 → 한국어 추가. `setup`이 확인해 줘요)
-- [Python 3.10 이상](https://www.python.org/downloads/) — 설치할 때 **Add python.exe to PATH**를 체크하세요
+- Windows 10 / 11, **한국어 OCR 언어 팩**(한국어 Windows는 기본 포함. 영문 Windows는 설정 → 시간 및 언어 → 언어 및 지역 → 한국어 추가. 처음 실행할 때 확인해 줘요)
+- Python 3.10 이상 — 없으면 `실행.bat`이 **자동으로 설치**해요(Windows 기본 설치 도구 winget 사용. winget이 없으면 [python.org](https://www.python.org/downloads/) 페이지를 열어 드려요)
 - 레조넌스 한국 PC 클라이언트, **구글 계정으로 로그인**하는 경우만 지원해요(다른 로그인 방식은 아직 없음)
 - 게임은 **16:9 창 모드**로 두세요. 화면 판별이 창 안쪽 16:9 비율 기준이에요
 
-## 설치
+## 설치와 실행
 
-```powershell
-git clone https://github.com/kktrudxo321/reso-alert.git
-cd reso-alert
-python -m pip install -r requirements.txt
-```
+1. [Releases](https://github.com/kktrudxo321/reso-alert/releases/latest)에서 `reso-alert-v버전.zip`을 받아, 원하는 곳에 압축을 풀어요.
+2. 게임을 켜고, 평소 쓰는 자리·크기로 게임 창을 둬요.
+3. 압축을 푼 `reso-alert` 폴더의 **`실행.bat`을 더블클릭**해요. 이것만 하면 돼요.
+   - Python이 없으면 설치하고, 필요한 부품(Pillow)이 없으면 설치해요.
+   - 처음 실행이면 게임 경로를 찾고 **지금 게임 창 위치를 저장**해요(재접속 때 이 자리로 옮겨요). 게임 경로를 못 찾으면 고르는 창이 떠요.
+   - 그다음 반복 재접속과 게임 창 위 배지를 켜요. 게임이 켜져 있으면 약 2분 30초 뒤, 꺼져 있으면 바로 게임을 다시 켜서 로그인·구매하고 다음 구매가 끝나는 시각을 읽어요.
+   - 검은 창은 10초 뒤 저절로 닫혀요. 닫혀도 프로그램은 계속 돌아요.
+4. 끌 때는 배지를 눌러 메뉴 → **프로그램 종료**를 골라요.
 
-## 처음 설정
+PC를 켤 때마다 자동으로 켜지게 하려면 **`시작프로그램 등록.bat`**을 더블클릭해요. 한 번 더 실행하면 등록을 해제할지 물어요. 프로그램 폴더를 옮겼다면 다시 등록해 주세요.
 
-1. 게임을 켜고, 평소 쓰는 자리·크기로 게임 창을 둬요.
-2. 아래 명령을 실행해요. 게임 경로를 찾고, **지금 게임 창 위치를 저장**해요(재접속 때 이 자리로 옮겨요).
+> Windows가 "PC 보호" 창을 띄우면 **추가 정보 → 실행**을 누르세요. 인터넷에서 받은 파일이라 뜨는 확인 창이에요. bat 파일은 메모장으로 열어 내용을 확인할 수 있어요.
 
-```powershell
-python -m resonance_auto setup
-```
+git으로 받는 경우: `git clone https://github.com/kktrudxo321/reso-alert.git` 뒤 같은 방법으로 `실행.bat`을 실행하면 돼요.
+
+### 설정
 
 설정은 `%LOCALAPPDATA%\ResonanceAutoRelogin\settings.json`에 있어요. 메모장으로 고쳐도 돼요.
 
@@ -60,16 +62,19 @@ python -m resonance_auto setup
 |---|---|---|
 | `game_exe` | (자동 찾기) | 게임 실행 파일 경로 |
 | `player_log` | `%USERPROFILE%\AppData\LocalLow\临界\레조넌스\Player.log` | 게임 로그 위치(로그인 완료 확인용) |
-| `window_rect` | setup 때 창 위치 | `[x, y, 너비, 높이]`. `null`이면 창을 옮기지 않아요 |
+| `window_rect` | 처음 실행 때 창 위치 | `[x, y, 너비, 높이]`. `null`이면 창을 옮기지 않아요 |
 | `relaunch` | `true` | 알림 시점에 재실행. `false`면 구매가 끝나는 시각에 알림만 띄워요(배지 메뉴에서 켜고 끌 수 있어요) |
 | `buy_automation` | `true` | 교정 센터 일괄 수령·구매까지 할지 |
 | `notify_before_restart` | `true` | 1분 전 알림 |
 | `screensaver_control` | `false` | 재접속 중 화면 보호기를 잠깐 끄고 끝나면 다시 켜기(PC 설정을 건드려서 기본 끔) |
 | `fallback_minutes` | `31` | 다음 주문 시각을 못 읽었을 때 다시 시도하는 최대 간격 |
 
-## 사용
+## 명령어로 쓰기 (선택)
+
+`실행.bat`이 하는 일을 명령으로 나눠서 할 수도 있어요. 프로그램 폴더에서 실행하세요.
 
 ```powershell
+python -m resonance_auto setup                # 처음 설정만 다시(게임 경로·창 위치)
 python -m resonance_auto once                 # 지금 한 번 재접속
 python -m resonance_auto start                # 구매 완료 시각마다 반복
 python -m resonance_auto start --interval 31  # 31분마다 반복
@@ -84,8 +89,7 @@ python -m resonance_auto update               # 최신 릴리스로 업데이트
 
 창 없이 조용히 돌리려면 `python` 대신 `pythonw`를 쓰세요. 예: `pythonw -m resonance_auto start`
 
-배지를 PC를 켤 때마다 띄우고 싶으면, `Win + R` → `shell:startup` 폴더에 바로 가기를 만들어요.
-대상: `pythonw.exe -m resonance_auto badge`, 시작 위치: 이 폴더.
+창 위치를 다시 저장하려면 게임 창을 원하는 자리에 두고 `python -m resonance_auto setup`을 실행하세요.
 
 기록은 `%LOCALAPPDATA%\ResonanceAutoRelogin\relogin.log`에 남아요(배지 메뉴 → 기록 열기).
 
@@ -98,7 +102,6 @@ python -m resonance_auto update               # 최신 릴리스로 업데이트
 - 구글 로그인 창은 Windows 테마(어둡게/밝게)를 따라 색이 바뀌어요. 두 테마 모두 지원해요.
 - 게임 업데이트로 화면이 바뀌면 판별이 틀릴 수 있어요. 이상하면 `relogin.log`를 첨부해 이슈로 알려 주세요(로그에는 시각·진행 단계, 오류가 나면 오류 내용이 있어요. 올리기 전에 한 번 확인하세요).
 - 게임을 관리자 권한으로 실행하는 경우 이 프로그램도 관리자 권한으로 실행해야 해요.
-- 명령은 이 폴더(저장소 폴더)에서 실행하세요.
 - 로그인이 5분 안에 안 되면 처음부터 다시, 최대 5번까지 해요.
 
 ## 검사 결과

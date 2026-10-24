@@ -15,6 +15,9 @@
 | `System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -NonInteractive -Command -` | Windows 내장 한국어 OCR로 '남은 시간' 글자 읽기. 코드에 적힌 고정 명령을 표준 입력으로만 넘기고, 스크립트 파일을 만들거나 실행 정책을 바꾸지 않아요 | `ocr.py` |
 | 같은 파이썬(`-m resonance_auto popup` 등) | 알림 창·반복 시작, 업데이트 뒤 배지·반복 다시 켜기 | `notify.py`, `badge.py` |
 | `git` (git으로 받은 경우, 업데이트할 때만) | 최신 릴리스 받기 | `updater.py` |
+| `winget install -e --id Python.Python.3.12 --scope user` (Python이 없을 때만) | `실행.bat`이 Python을 현재 사용자용으로 설치. 관리자 권한을 쓰지 않아요 | `실행.bat` |
+| `python -m pip install -r requirements.txt` (Pillow가 없을 때만) | 이미지 처리 부품 설치 | `실행.bat` |
+| 같은 PowerShell(`시작프로그램 등록.bat`을 실행했을 때만) | 시작 프로그램 폴더에 바로 가기 `Reso Alert.lnk` 만들기 | `__main__.py` `autostart` |
 
 ## Windows API
 
@@ -37,6 +40,8 @@
 
 **'업데이트 확인'(배지 메뉴 또는 `python -m resonance_auto update`)을 눌렀을 때만** 접속해요. 그 밖에는 접속하지 않아요(`updater.py`).
 
+예외: `실행.bat`은 Python이 없을 때 winget(Microsoft 공식 저장소)으로 Python을, Pillow가 없을 때 pip(PyPI)으로 Pillow를 받아요. 이미 설치돼 있으면 접속하지 않아요.
+
 - 접속하는 곳: `api.github.com`(최신 릴리스 정보), `github.com`과 GitHub 릴리스 파일 저장소(압축 파일 받기). 코드에 이 주소들만 허용해 두고, 다른 곳으로 이동되면 멈춰요.
 - 보내는 것: 없음(일반 HTTPS 요청, User-Agent에 프로그램 버전만).
 - git으로 받은 폴더면 `git fetch --tags` 후 릴리스 태그로 이어 받기만 해요(직접 고친 파일이 있으면 멈춤).
@@ -44,7 +49,7 @@
 
 ## 시작 프로그램·자동 실행
 
-스스로 시작 프로그램에 등록하지 않아요. 원하면 README대로 직접 바로 가기를 만들어요.
+사용자가 `시작프로그램 등록.bat`을 실행했을 때만 `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\Reso Alert.lnk`를 만들어요(대상: `pythonw.exe -m resonance_auto launch`, 시작 위치: 프로그램 폴더). 다시 실행하면 해제할 수 있고, 직접 지워도 돼요. 레지스트리·작업 스케줄러·서비스는 쓰지 않아요.
 
 ## 알려진 위험
 
@@ -55,6 +60,6 @@
 
 ## 확인하는 방법
 
-- 소스 코드만 배포해요(실행 파일 없음). `pip install -r requirements.txt`는 Pillow(이미지 처리)만 설치해요.
+- 소스 코드만 배포해요(실행 파일 없음). `실행.bat`·`시작프로그램 등록.bat`은 메모장으로 열어 볼 수 있는 짧은 글자 파일이에요. `pip install -r requirements.txt`는 Pillow(이미지 처리)만 설치해요.
 - 저장소의 GitHub Actions가 코드 문법 검사와 CodeQL 보안 검사를 돌려요.
 - 문제를 발견하면 공개 이슈 대신 저장소의 *Security → Report a vulnerability*로 알려 주세요.
