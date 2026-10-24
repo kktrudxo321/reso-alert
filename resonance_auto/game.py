@@ -297,12 +297,12 @@ class Game:
                 if not m:
                     continue
                 near = [lt for lx, lt in labels if x - 60 * k <= lx <= x + 220 * k]
-                if near and '남은' in near[0]:
-                    sec = int(m.group(1)) * 3600 + int(m.group(2)) * 60 + int(m.group(3))
-                    if sec >= 20:
-                        left.append(sec)
-                    else:
-                        done = True
+                sec = int(m.group(1)) * 3600 + int(m.group(2)) * 60 + int(m.group(3))
+                if sec < 20:
+                    # 00:00:00: 방금 끝났거나 일괄 구매 직후 화면이 아직 안 바뀐 상태 → 구매 화면을 다시 열어 확인
+                    done = True
+                elif near and '남은' in near[0]:
+                    left.append(sec)
             self.done_seen = done
             if left:
                 at = datetime.fromtimestamp(time.time() + min(left))
