@@ -24,7 +24,7 @@
 - 프로세스 목록 조회, **게임 프로세스 종료**(`TerminateProcess`, 재접속 목적)
 - 창 찾기·이동·'항상 위' 설정·창 순서 조정(`SetWindowPos`, `GetWindow`), 창 스타일 변경(`SetWindowLong`: 배지·알림이 포커스를 가져가지 않게), 창 화면 캡처(`PrintWindow`와 GDI 함수)
 - 같은 기능이 두 번 동시에 돌지 않게 이름 있는 뮤텍스(`CreateMutex`)
-- 실제 마우스 이동·클릭(`SetCursorPos`, `mouse_event`), 게임 창으로 포커스 옮기기(`AttachThreadInput`, `SetForegroundWindow`)
+- 실제 마우스 이동·클릭(`SetCursorPos`, `GetCursorPos`, `mouse_event`), 게임 창으로 포커스 옮기기(`AttachThreadInput`, `SetForegroundWindow`), 다른 게임이 걸어 둔 커서 가둠 풀기(`ClipCursor(NULL)`, 게임 창으로 포커스를 옮긴 뒤 클릭 직전에만)
 - 마지막 입력 시각 확인(`GetLastInputInfo`, 1분 전 알림용)
 - 설정 시에만: 화면 보호기 잠깐 끄기(`SystemParametersInfo`, 저장하지 않는 변경), 절전 방지(`SetThreadExecutionState`)
 

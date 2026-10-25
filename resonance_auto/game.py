@@ -63,6 +63,7 @@ class Game:
         self.player_log = cfg['player_log']
         self._log_start = 0
         self.done_seen = False
+        self._focus_warned = False
 
     # 창·클릭
     def pid(self):
@@ -80,7 +81,11 @@ class Game:
         if self.cfg.get('screensaver_control'):
             end_screensaver()
         x, y = S.scaled(img, p)
-        W.click_screen(hwnd, *W.client_to_screen(hwnd, x, y))
+        ok, blocker = W.click_screen(hwnd, *W.client_to_screen(hwnd, x, y))
+        if not ok and not self._focus_warned:
+            self._focus_warned = True
+            hint = '' if W.is_admin() else ' 그 창이 관리자 권한으로 실행 중이면 실행.bat을 우클릭 → "관리자 권한으로 실행"으로 켜 주세요.'
+            log(f'게임 창으로 포커스를 옮기지 못했어요(앞 창: {blocker!r}).{hint}')
 
     # 켜고 끄기
     def kill(self):

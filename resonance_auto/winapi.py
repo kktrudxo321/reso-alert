@@ -200,19 +200,43 @@ def set_topmost(hwnd, on):
     u32.SetWindowPos(hwnd, -1 if on else -2, 0, 0, 0, 0, 0x0001 | 0x0002 | 0x0010)
 
 
+def is_admin():
+    try:
+        return bool(ctypes.windll.shell32.IsUserAnAdmin())
+    except Exception:
+        return False
+
+
+def window_title(hwnd):
+    buf = ctypes.create_unicode_buffer(200)
+    u32.GetWindowTextW(hwnd, buf, 200)
+    return buf.value
+
+
 def focus(hwnd):
-    """키 입력 흉내 없이 포커스만 옮긴다(앞 창의 입력 큐에 잠깐 붙어서 SetForegroundWindow)."""
-    if u32.GetForegroundWindow() == hwnd:
-        return
-    fg = u32.GetForegroundWindow()
-    a = u32.GetWindowThreadProcessId(fg, None)
-    b = k32.GetCurrentThreadId()
-    if a and a != b:
-        u32.AttachThreadInput(b, a, True)
-    u32.BringWindowToTop(hwnd)
-    u32.SetForegroundWindow(hwnd)
-    if a and a != b:
-        u32.AttachThreadInput(b, a, False)
+    """키 입력 흉내 없이 포커스만 옮긴다(앞 창의 입력 큐에 잠깐 붙어서 SetForegroundWindow).
+    넘어왔는지 확인하고 안 됐으면 몇 번 더 한다. 넘어오면 앞에 있던 게임이 걸어 둔 커서 가둠(ClipCursor)을 푼다
+    (FPS 게임처럼 커서를 숨기고 가두는 창이 앞에 있어도 클릭할 수 있게). 앞 창이 관리자 권한으로 실행 중이면
+    Windows 보안 때문에 이 프로그램도 관리자 권한이어야 넘어온다. 넘어왔으면 True."""
+    for _ in range(5):
+        fg = u32.GetForegroundWindow()
+        if fg == hwnd:
+            break
+        if u32.IsIconic(hwnd):
+            u32.ShowWindow(hwnd, 9)                 # SW_RESTORE
+        a = u32.GetWindowThreadProcessId(fg, None)
+        b = k32.GetCurrentThreadId()
+        if a and a != b:
+            u32.AttachThreadInput(b, a, True)
+        u32.BringWindowToTop(hwnd)
+        u32.SetForegroundWindow(hwnd)
+        if a and a != b:
+            u32.AttachThreadInput(b, a, False)
+        time.sleep(0.2)
+    ok = u32.GetForegroundWindow() == hwnd
+    if ok:
+        u32.ClipCursor(None)
+    return ok
 
 
 def capture(hwnd):
@@ -242,15 +266,26 @@ def capture(hwnd):
 
 
 def click_screen(hwnd, x, y, press=0.15):
-    """게임 창을 맨 위·포커스로 두고 실제 마우스로 한 번 누른다(백그라운드 메시지는 게임이 무시함)."""
+    """게임 창을 맨 위·포커스로 두고 실제 마우스로 한 번 누른다(백그라운드 메시지는 게임이 무시함).
+    포커스를 옮겼으면 True. 못 옮겼으면 앞 창 제목을 담아 False와 함께 돌려준다."""
     set_topmost(hwnd, True)
-    focus(hwnd)
+    ok = focus(hwnd)
+    blocker = '' if ok else window_title(u32.GetForegroundWindow())
     time.sleep(0.15)
-    u32.SetCursorPos(x, y)
-    time.sleep(0.1)
+    for _ in range(3):                      # 커서가 다른 게임에 갇혀 있으면 풀고 다시 옮김
+        u32.ClipCursor(None)
+        u32.SetCursorPos(x, y)
+        time.sleep(0.05)
+        pt = wt.POINT()
+        u32.GetCursorPos(ctypes.byref(pt))
+        if (pt.x, pt.y) == (x, y):
+            break
+        focus(hwnd)
+    time.sleep(0.05)
     u32.mouse_event(0x0002, 0, 0, 0, 0)     # LEFTDOWN
     time.sleep(press + random.uniform(-0.03, 0.03))
     u32.mouse_event(0x0004, 0, 0, 0, 0)     # LEFTUP
+    return ok, blocker
 
 
 def client_to_screen(hwnd, x, y):
